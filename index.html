@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f1eff8" />
+    <meta
+      name="description"
+      content="An image-to-palette studio powered by K-means clustering. Find colors, compare a posterized image, and export your palette."
+    />
+    <title>Chroma Lab — Color, discovered.</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to the studio</a>
+    <header>
+      <a href="./" class="brand"
+        ><span class="brand-icon" aria-hidden="true">c</span>chroma<span
+          class="lab"
+          >LAB</span
+        ></a
+      >
+      <div class="header-note">A small experiment in seeing differently.</div>
+      <button id="about" class="text-button">
+        Behind the colors <span aria-hidden="true">↗</span>
+      </button>
+    </header>
+    <main id="main">
+      <noscript><p class="notice">Chroma Lab needs JavaScript to process images locally. Enable JavaScript, or use the Python companion in this repository.</p></noscript>
+      <div class="intro">
+        <div>
+          <span class="eyebrow">IMAGE IN. INSPIRATION OUT.</span>
+          <h1>Color, <span>discovered.</span></h1>
+          <p>Find the palette hiding in your photo. Make something with it.</p>
+        </div>
+        <div class="intro-actions">
+          <button class="upload primary" id="upload">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5" /></svg
+            >Open an image</button
+          ><span class="small">Your images stay on your device.</span>
+        </div>
+      </div>
+      <input
+        id="file"
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/avif"
+        hidden
+      />
+      <div class="studio" id="studio" aria-busy="true">
+        <section class="image-panel" aria-label="Image workspace">
+          <div class="panel-top">
+            <div class="file-meta">
+              <span class="file-icon" aria-hidden="true">▧</span>
+              <div>
+                <strong id="filename">Chromatic still life</strong
+                ><span id="dimensions">Sample image</span>
+              </div>
+            </div>
+            <div class="view-picker" role="group" aria-label="Image view">
+              <button data-view="original" aria-pressed="false">Original</button
+              ><button data-view="compare" class="active" aria-pressed="true">
+                Compare</button
+              ><button data-view="result" aria-pressed="false">Result</button>
+            </div>
+          </div>
+          <div id="dropzone" class="dropzone">
+            <div class="image-stage" id="stage">
+              <canvas id="original" aria-label="Original image"></canvas
+              ><canvas
+                id="result"
+                aria-label="Image reduced to the discovered palette"
+              ></canvas>
+              <div class="compare-line" id="compareLine" aria-hidden="true">
+                <span aria-hidden="true">‹ ›</span>
+              </div>
+              <span id="originalLabel" class="image-label original-label"
+                >ORIGINAL</span
+              ><span id="resultLabel" class="image-label result-label"
+                >PALETTE</span
+              >
+            </div>
+            <div id="dropHint" class="drop-hint">Drop your photo here</div>
+            <div class="loading" id="loading">
+              <span class="spinner"></span
+              ><span id="loadingText">Opening the studio…</span>
+            </div>
+          </div>
+          <div class="image-toolbar">
+            <label for="compare">Before / after</label
+            ><input
+              id="compare"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+              aria-label="Original and result comparison"
+            /><span id="compareValue">50%</span
+            ><button class="text-button sample-button" id="sample">
+              Use sample
+            </button>
+          </div>
+          <div class="image-footer">
+            <span id="status" role="status">Preparing the sample image.</span
+            ><span class="privacy">LOCAL PROCESSING</span>
+          </div>
+        </section>
+        <aside class="palette-panel">
+          <div class="palette-title">
+            <span class="eyebrow">THE COLOR EDIT</span>
+            <h2>Your palette<span id="paletteCount">/ —</span></h2>
+          </div>
+          <div class="cluster-controls">
+            <div class="label-row">
+              <label for="colors">How many colors?</label
+              ><output id="colorValue" for="colors">6</output>
+            </div>
+            <input type="range" id="colors" min="2" max="12" value="6" />
+            <div class="range-labels">
+              <span>Minimal / 2</span><span>Detailed / 12</span>
+            </div>
+            <button class="analyze" id="analyze" disabled>
+              Discover colors <span aria-hidden="true">✳</span>
+            </button>
+          </div>
+          <div class="swatch-bar" id="swatchBar" aria-hidden="true"></div>
+          <div class="palette-list" id="paletteList">
+            <p class="small">Your colors will appear here.</p>
+          </div>
+          <p class="palette-hint">Click a color to copy its HEX code.</p>
+          <div class="export-buttons">
+            <button id="copyCss" disabled>Copy CSS</button
+            ><button id="exportPalette" disabled>
+              Palette SVG <span aria-hidden="true">↓</span>
+            </button>
+            <button id="exportCss" disabled>CSS file <span aria-hidden="true">↓</span></button>
+            <button id="exportJson" disabled>JSON data <span aria-hidden="true">↓</span></button>
+          </div>
+          <button id="exportImage" class="export-image" disabled>
+            Download posterized image <span aria-hidden="true">↓</span>
+          </button>
+        </aside>
+      </div>
+      <section class="process-strip" aria-label="Analysis information">
+        <div>
+          <span class="eyebrow">A LITTLE SCIENCE. A LOT OF COLOR.</span>
+          <p>Similar pixels, brought together.</p>
+        </div>
+        <div class="stat">
+          <strong id="iterations">—</strong><span>Clustering rounds</span>
+        </div>
+        <div class="stat">
+          <strong id="sampleSize">—</strong><span>Pixels sampled</span>
+        </div>
+        <div class="stat">
+          <strong id="elapsed">—</strong><span>Processing time</span>
+        </div>
+        <button class="method-button" id="method">
+          How does it work? <span aria-hidden="true">↗</span>
+        </button>
+      </section>
+      <footer>
+        <span
+          >CHROMA LAB <span class="footer-separator">/</span> IMAGE PALETTE STUDIO</span
+        ><span>K-means clustering · OKLab color space</span>
+      </footer>
+    </main>
+    <dialog id="guide" aria-labelledby="guideTitle">
+      <button class="close" id="closeGuide" aria-label="Close">×</button
+      ><span class="eyebrow">UNSUPERVISED LEARNING, IN COLOR</span>
+      <h2 id="guideTitle">A palette found.<br />Not picked by hand.</h2>
+      <p>
+        Chroma Lab uses <strong>K-means clustering</strong> to discover groups
+        of similar colors in an image. No labels or pretrained model are needed.
+      </p>
+      <ol>
+        <li>
+          <strong>Sample.</strong> Read up to 8,000 pixels from your image.
+        </li>
+        <li>
+          <strong>Group.</strong> Convert colors to OKLab, then repeatedly
+          assign pixels to their nearest color center and move each center to
+          its group’s average.
+        </li>
+        <li>
+          <strong>Repaint.</strong> Replace every pixel with its nearest
+          discovered color.
+        </li>
+      </ol>
+      <p>
+        OKLab helps color distances better reflect how we see. Percentages show
+        each color’s share of the processed image. Clustering stops after
+        convergence or 30 rounds.
+      </p>
+      <p class="small">
+        Images are processed locally, resized to a maximum 1,200-pixel edge, and
+        flattened on white if transparent. Exports use this processed size.
+        Results are deterministic for the same image and color count. The sample
+        is AI-generated.
+      </p>
+      <button id="gotIt" class="primary">Back to the studio</button>
+    </dialog>
+    <div id="toast" class="toast" role="status"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
