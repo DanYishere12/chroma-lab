@@ -2,7 +2,7 @@
 
 **Discover the colors in a photo. Turn them into something useful.**
 
-**[Try the live demo](https://danyishere12.github.io/chroma-lab/)** — open it in your desktop browser, choose a photo, and export your palette. No installation or account required.
+**[Try the live demo](https://danyishere12.github.io/chroma-lab/)** . Open it in your desktop browser, choose a photo, and export your palette. No installation or account required.
 
 A local image-to-palette studio built with vanilla JavaScript, Web Workers, and K-means++ clustering in OKLab color space. Drop in an image, explore a posterized reconstruction, and export a palette for your next design.
 
